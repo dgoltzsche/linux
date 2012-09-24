@@ -100,15 +100,19 @@ static struct clcd_board ct_ca9x4_clcd_data = {
 };
 
 static AMBA_AHB_DEVICE(clcd, "ct:clcd", 0, CT_CA9X4_CLCDC, IRQ_CT_CA9X4_CLCDC, &ct_ca9x4_clcd_data);
+#ifdef RUNS_IN_SECURE_WORLD
 static AMBA_APB_DEVICE(dmc, "ct:dmc", 0, CT_CA9X4_DMC, IRQ_CT_CA9X4_DMC, NULL);
 static AMBA_APB_DEVICE(smc, "ct:smc", 0, CT_CA9X4_SMC, IRQ_CT_CA9X4_SMC, NULL);
 static AMBA_APB_DEVICE(gpio, "ct:gpio", 0, CT_CA9X4_GPIO, IRQ_CT_CA9X4_GPIO, NULL);
+#endif
 
 static struct amba_device *ct_ca9x4_amba_devs[] __initdata = {
 	&clcd_device,
+#ifdef RUNS_IN_SECURE_WORLD
 	&dmc_device,
 	&smc_device,
 	&gpio_device,
+#endif
 };
 
 

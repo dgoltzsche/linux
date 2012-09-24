@@ -60,16 +60,25 @@ static void __iomem *v2m_sysreg_base;
 
 static void __init v2m_sysctl_init(void __iomem *base)
 {
+#ifdef RUNS_IN_SECURE_WORLD
 	u32 scctrl;
+#endif
 
 	if (WARN_ON(!base))
 		return;
 
+#ifdef RUNS_IN_SECURE_WORLD
 	/* Select 1MHz TIMCLK as the reference clock for SP804 timers */
 	scctrl = readl(base + SCCTRL);
 	scctrl |= SCCTRL_TIMEREN0SEL_TIMCLK;
 	scctrl |= SCCTRL_TIMEREN1SEL_TIMCLK;
 	writel(scctrl, base + SCCTRL);
+#else
+	asm volatile("mov r1, #1 \n"
+				 "dsb        \n"
+				 "dmb        \n"
+				 "smc        \n" ::: "r1");
+#endif
 }
 
 static void __init v2m_sp804_init(void __iomem *base, unsigned int irq)
@@ -96,6 +105,7 @@ int v2m_cfg_write(u32 devfn, u32 data)
 
 	devfn |= SYS_CFG_START | SYS_CFG_WRITE;
 
+#ifdef RUNS_IN_SECURE_WORLD
 	spin_lock(&v2m_cfg_lock);
 	val = readl(v2m_sysreg_base + V2M_SYS_CFGSTAT);
 	writel(val & ~SYS_CFG_COMPLETE, v2m_sysreg_base + V2M_SYS_CFGSTAT);
@@ -107,7 +117,16 @@ int v2m_cfg_write(u32 devfn, u32 data)
 		val = readl(v2m_sysreg_base + V2M_SYS_CFGSTAT);
 	} while (val == 0);
 	spin_unlock(&v2m_cfg_lock);
-
+#else
+	asm volatile("mov r1, #5       \n"
+				 "mov r2, %[dev]   \n"
+				 "mov r0, %[value] \n"
+				 "dsb              \n"
+				 "dmb              \n"
+	             "smc              \n"
+	             :: [value] "r" (data), [dev] "r" (devfn) : "r0", "r1", "r2", "memory");
+	val = 0;
+#endif
 	return !!(val & SYS_CFG_ERR);
 }
 
@@ -142,7 +161,17 @@ void __init v2m_flags_set(u32 data)
 
 int v2m_get_master_site(void)
 {
+#ifdef RUNS_IN_SECURE_WORLD
 	u32 misc = readl(v2m_sysreg_base + V2M_SYS_MISC);
+#else
+	u32 misc;
+	asm volatile("mov r1, #4       \n"
+				 "dsb              \n"
+				 "dmb              \n"
+				 "smc              \n"
+				 "mov %[value], r0 \n"
+				 : [value] "=r" (misc) :: "r0", "r1");
+#endif
 
 	return misc & SYS_MISC_MASTERSITE ? SYS_CFG_SITE_DB2 : SYS_CFG_SITE_DB1;
 }
@@ -291,7 +320,18 @@ static struct platform_device v2m_cf_device = {
 
 static unsigned int v2m_mmci_status(struct device *dev)
 {
+#ifdef RUNS_IN_SECURE_WORLD
 	return readl(v2m_sysreg_base + V2M_SYS_MCI) & (1 << 0);
+#else
+	u32 ret;
+	asm volatile("mov r1, #6       \n"
+				 "dsb              \n"
+				 "dmb              \n"
+				 "smc              \n"
+				 "mov %[value], r0 \n"
+				 : [value] "=r" (ret) :: "r0", "r1");
+	return ret & (1 << 0);
+#endif
 }
 
 static struct mmci_platform_data v2m_mmci_data = {
@@ -303,9 +343,11 @@ static AMBA_APB_DEVICE(aaci,  "mb:aaci",  0, V2M_AACI, IRQ_V2M_AACI, NULL);
 static AMBA_APB_DEVICE(mmci,  "mb:mmci",  0, V2M_MMCI, IRQ_V2M_MMCI, &v2m_mmci_data);
 static AMBA_APB_DEVICE(kmi0,  "mb:kmi0",  0, V2M_KMI0, IRQ_V2M_KMI0, NULL);
 static AMBA_APB_DEVICE(kmi1,  "mb:kmi1",  0, V2M_KMI1, IRQ_V2M_KMI1, NULL);
+#ifdef RUNS_IN_SECURE_WORLD
 static AMBA_APB_DEVICE(uart0, "mb:uart0", 0, V2M_UART0, IRQ_V2M_UART0, NULL);
 static AMBA_APB_DEVICE(uart1, "mb:uart1", 0, V2M_UART1, IRQ_V2M_UART1, NULL);
 static AMBA_APB_DEVICE(uart2, "mb:uart2", 0, V2M_UART2, IRQ_V2M_UART2, NULL);
+#endif
 static AMBA_APB_DEVICE(uart3, "mb:uart3", 0, V2M_UART3, IRQ_V2M_UART3, NULL);
 static AMBA_APB_DEVICE(wdt,   "mb:wdt",   0, V2M_WDT, IRQ_V2M_WDT, NULL);
 static AMBA_APB_DEVICE(rtc,   "mb:rtc",   0, V2M_RTC, IRQ_V2M_RTC, NULL);
@@ -315,9 +357,11 @@ static struct amba_device *v2m_amba_devs[] __initdata = {
 	&mmci_device,
 	&kmi0_device,
 	&kmi1_device,
+#ifdef RUNS_IN_SECURE_WORLD
 	&uart0_device,
 	&uart1_device,
 	&uart2_device,
+#endif
 	&uart3_device,
 	&wdt_device,
 	&rtc_device,
@@ -480,8 +524,17 @@ static void __init v2m_populate_ct_desc(void)
 	u32 current_tile_id;
 
 	ct_desc = NULL;
+#ifdef RUNS_IN_SECURE_WORLD
 	current_tile_id = readl(v2m_sysreg_base + V2M_SYS_PROCID0)
 				& V2M_CT_ID_MASK;
+#else
+	asm volatile("mov r1, #2       \n"
+				 "dsb              \n"
+				 "dmb              \n"
+				 "smc              \n"
+				 "mov %[value], r0 \n"
+				 : [value] "=r" (current_tile_id) :: "r0", "r1");
+#endif
 
 	for (i = 0; i < ARRAY_SIZE(ct_descs) && !ct_desc; ++i)
 		if (ct_descs[i]->id == current_tile_id)

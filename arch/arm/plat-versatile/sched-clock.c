@@ -28,8 +28,20 @@ static void __iomem *ctr;
 
 static u32 notrace versatile_read_sched_clock(void)
 {
+#ifdef RUNS_IN_SECURE_WORLD
 	if (ctr)
 		return readl(ctr);
+#else
+	if (ctr) {
+		static u32 ret;
+		asm volatile("mov r1, #3       \n"
+					 "dsb              \n"
+					 "dmb              \n"
+					 "smc              \n"
+					 "mov %[value], r0 \n" : [value] "=r" (ret) :: "r0", "r1");
+		return ret;
+	}
+#endif
 
 	return 0;
 }
