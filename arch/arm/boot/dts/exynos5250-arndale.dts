@@ -257,11 +257,15 @@
                 samsung,i2c-max-bus-freq = <40000>;
 		samsung,i2c-slave-addr = <0x38>;
 
-		sataphy@70 {
-			compatible = "samsung,i2c-phy";
+		sata-phy {
+			compatible = "samsung,sata-phy";
 			reg = <0x38>;
 		};
 	}; 
+
+	sata@122F0000 {
+		samsung,sata-freq = <66>;
+	};
 
 	i2c@12C80000 {
 		status = "disabled";
