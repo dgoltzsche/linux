@@ -14,6 +14,8 @@
 
 #include <asm/mach/arch.h>
 #include <asm/hardware/gic.h>
+#include <asm/io.h>
+
 #include <mach/map.h>
 #include <linux/platform_data/usb-exynos.h>
 #include <linux/platform_data/samsung-usbphy.h>
