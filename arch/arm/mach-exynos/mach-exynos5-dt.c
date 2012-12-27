@@ -127,6 +127,8 @@ static const struct of_dev_auxdata exynos5250_auxdata_lookup[] __initconst = {
 				"s5p-ehci", &smdk5250_ehci_pdata),
 	OF_DEV_AUXDATA("samsung,exynos-dwc3", EXYNOS5_PA_DRD,
 				"exynos-dwc3", NULL),
+	OF_DEV_AUXDATA("samsung,exynos5250-tmu", EXYNOS5_PA_TMU,
+				"exynos-tmu", NULL),
 	{},
 };
 
