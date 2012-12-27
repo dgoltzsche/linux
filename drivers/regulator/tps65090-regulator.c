@@ -81,7 +81,7 @@ static inline struct tps65090_regulator *find_regulator_info(int id)
 	return NULL;
 }
 
-static int __devinit tps65090_regulator_probe(struct platform_device *pdev)
+static int tps65090_regulator_probe(struct platform_device *pdev)
 {
 	struct tps65090 *tps65090_mfd = dev_get_drvdata(pdev->dev.parent);
 	struct tps65090_regulator *ri = NULL;
