@@ -18,6 +18,7 @@
 #include <asm/io.h>
 
 #include <mach/map.h>
+#include <mach/regs-pmu.h>
 #include <linux/platform_data/usb-exynos.h>
 #include <linux/platform_data/samsung-usbphy.h>
 
