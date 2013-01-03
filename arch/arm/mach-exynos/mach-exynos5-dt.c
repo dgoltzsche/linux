@@ -11,6 +11,7 @@
 
 #include <linux/of_platform.h>
 #include <linux/serial_core.h>
+#include <linux/io.h>
 
 #include <asm/mach/arch.h>
 #include <asm/hardware/gic.h>
@@ -135,8 +136,14 @@ static void __init exynos5250_dt_map_io(void)
 	s3c24xx_init_clocks(24000000);
 }
 
+static void exynos5_i2c_setup(void)
+{	/* Setup the low-speed i2c controller interrupts */
+	writel(0x0, EXYNOS5_SYS_I2C_CFG);
+}
+
 static void __init exynos5250_dt_machine_init(void)
 {
+	exynos5_i2c_setup();
 	of_platform_populate(NULL, of_default_bus_match_table,
 				exynos5250_auxdata_lookup, NULL);
 }
