@@ -22,6 +22,9 @@
 #include <linux/platform_data/usb-exynos.h>
 #include <linux/platform_data/samsung-usbphy.h>
 
+#include <mach/ppmu.h>
+#include <mach/dev.h>
+ 
 #include <plat/cpu.h>
 #include <plat/regs-serial.h>
 #include <plat/regs-srom.h>
@@ -30,6 +33,20 @@
 #include <linux/platform_data/usb-ehci-s5p.h>
 
 #include "common.h"
+
+#ifdef CONFIG_BUSFREQ_OPP
+/* BUSFREQ to control memory/bus*/
+static struct device_domain busfreq;
+
+static struct platform_device exynos5_busfreq = {
+	.id = -1,
+	.name = "exynos-busfreq",
+};
+static struct platform_device *smdk5250_devices[] __initdata = {
+	&exynos5_busfreq,
+};
+#endif
+
 
 static struct samsung_usbphy_data exynos5_usbphy_pdata = {
 	.pmu_isolation = s5p_usb_phy_pmu_isolation,
@@ -155,6 +172,16 @@ static void __init exynos5250_dt_machine_init(void)
 	exynos5_i2c_setup();
 	of_platform_populate(NULL, of_default_bus_match_table,
 				exynos5250_auxdata_lookup, NULL);
+#ifdef CONFIG_BUSFREQ_OPP
+	dev_add(&busfreq, &exynos5_busfreq.dev);
+	ppmu_init(&exynos_ppmu[PPMU_CPU], &exynos5_busfreq.dev);
+	ppmu_init(&exynos_ppmu[PPMU_DDR_C], &exynos5_busfreq.dev);
+	ppmu_init(&exynos_ppmu[PPMU_DDR_R1], &exynos5_busfreq.dev);
+	ppmu_init(&exynos_ppmu[PPMU_DDR_L], &exynos5_busfreq.dev);
+	ppmu_init(&exynos_ppmu[PPMU_RIGHT0_BUS], &exynos5_busfreq.dev);
+ 	platform_add_devices(smdk5250_devices, ARRAY_SIZE(smdk5250_devices));
+#endif
+
 }
 
 static char const *exynos5250_dt_compat[] __initdata = {
