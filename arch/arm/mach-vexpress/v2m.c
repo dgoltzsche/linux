@@ -343,12 +343,12 @@ static AMBA_APB_DEVICE(aaci,  "mb:aaci",  0, V2M_AACI, IRQ_V2M_AACI, NULL);
 static AMBA_APB_DEVICE(mmci,  "mb:mmci",  0, V2M_MMCI, IRQ_V2M_MMCI, &v2m_mmci_data);
 static AMBA_APB_DEVICE(kmi0,  "mb:kmi0",  0, V2M_KMI0, IRQ_V2M_KMI0, NULL);
 static AMBA_APB_DEVICE(kmi1,  "mb:kmi1",  0, V2M_KMI1, IRQ_V2M_KMI1, NULL);
-#ifdef RUNS_IN_SECURE_WORLD
 static AMBA_APB_DEVICE(uart0, "mb:uart0", 0, V2M_UART0, IRQ_V2M_UART0, NULL);
+#ifdef RUNS_IN_SECURE_WORLD
 static AMBA_APB_DEVICE(uart1, "mb:uart1", 0, V2M_UART1, IRQ_V2M_UART1, NULL);
 static AMBA_APB_DEVICE(uart2, "mb:uart2", 0, V2M_UART2, IRQ_V2M_UART2, NULL);
-#endif
 static AMBA_APB_DEVICE(uart3, "mb:uart3", 0, V2M_UART3, IRQ_V2M_UART3, NULL);
+#endif
 static AMBA_APB_DEVICE(wdt,   "mb:wdt",   0, V2M_WDT, IRQ_V2M_WDT, NULL);
 static AMBA_APB_DEVICE(rtc,   "mb:rtc",   0, V2M_RTC, IRQ_V2M_RTC, NULL);
 
@@ -357,12 +357,12 @@ static struct amba_device *v2m_amba_devs[] __initdata = {
 	&mmci_device,
 	&kmi0_device,
 	&kmi1_device,
-#ifdef RUNS_IN_SECURE_WORLD
 	&uart0_device,
+#ifdef RUNS_IN_SECURE_WORLD
 	&uart1_device,
 	&uart2_device,
-#endif
 	&uart3_device,
+#endif
 	&wdt_device,
 	&rtc_device,
 };
