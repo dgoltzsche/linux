@@ -38,6 +38,7 @@ static int genode_touch_get_event(int *x, int *y, int *code)
 				  "mov  r1, #0     \n"
 				  "isb             \n"
 				  "dsb             \n"
+				  ".arch_extension sec\n"
 				  "smc  #0         \n"
 				  "mov  %[t], r0   \n"
 				  "mov  %[x], r1   \n"

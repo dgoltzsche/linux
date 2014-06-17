@@ -124,6 +124,7 @@ static void genodefb_base(unsigned long base)
 				  "mov  r2, %[b]   \n"
 				  "isb             \n"
 				  "dsb             \n"
+				  ".arch_extension sec\n"
 				  "smc  #0         \n"
 				  :: [b] "r" (base) : "memory", "r0", "r1", "r2");
 }
