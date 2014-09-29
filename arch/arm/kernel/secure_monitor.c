@@ -3,6 +3,8 @@
  
 asmlinkage int sys_secure_monitor(void* addr_a, void* addr_b)
 {
+	//seems not to working without printing??
+	printk("secure monitor syscall: 0x%X, 0x%X\n",addr_a,addr_b);
 	asm volatile ("mov r0, #2 \n"
 				  "mov r1, %[a] \n"
 				  "mov r2, %[b] \n"
