@@ -12,7 +12,8 @@ asmlinkage long sys_trustl_init(void* addr_a, void* addr_b, void* addr_c, unsign
 		syscall_nr = 4;
 
 	printk("0x%X 0x%X 0x%X 0x%X\n",addr_a,addr_b,addr_c,stampmem);
-	asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(*(stampmem+1))); //t1
+	if ( stampmem != NULL )
+		asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(*(stampmem+1))); //t1
 
 	asm volatile ("mov r0, %[n] \n"
 				  "mov r1, %[a] \n"
@@ -30,7 +31,8 @@ asmlinkage long sys_trustl_init(void* addr_a, void* addr_b, void* addr_c, unsign
 				    [c] "r" (addr_c),
 				    [d] "r" (stampmem));
 
-	asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(*(stampmem+4)));//t4
+	if ( stampmem != NULL )
+		asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(*(stampmem+4)));//t4
 	return 0;
 }
 
