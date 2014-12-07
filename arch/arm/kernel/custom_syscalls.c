@@ -1,7 +1,7 @@
 #include <asm/io.h>
 #include <linux/syscalls.h>
 
-asmlinkage long sys_trustl_init(void* addr_a, void* addr_b, void* addr_c, unsigned int* stampmem)
+asmlinkage long sys_seca_init(void* addr_a, void* addr_b, void* addr_c, unsigned int* stampmem)
 {
 	int syscall_nr = 3;
 	if(addr_a == NULL) return -1;
